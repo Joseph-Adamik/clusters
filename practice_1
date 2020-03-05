@@ -1,0 +1,185 @@
+##this is using data from openei which can be found here https://openei.org/datasets/files/961/pub/  It works with any of these dat sets
+
+library(tidyverse)
+library(cluster)    # clustering algorithms
+library(factoextra)
+library(chron)
+library(lubridate)
+library(gridExtra)
+##setwd("~/r_stuff/COMMERCIAL_LOAD_DATA_E_PLUS_OUTPUT.part1/USA_AK_Anchorage.Intl.AP.702730_TMY3"
+##)
+setwd("~/r_stuff/Data_Sets/COMMERCIAL_LOAD_DATA_E_PLUS_OUTPUT.part1/USA_AK_Anchorage.Intl.AP.702730_TMY3")
+data <- read.csv("Hotel_energy_consumption_Fairbanks_AK.csv",header = TRUE)
+head(data)
+dim(data)
+colnames(data) <- c("year","month", "day" ,"hour", "Facility","Fans","Cooling","Heating","Int_Lights","Int_Equp","Gas_Facil","Heating_Gas","Int_Equip_Gas","Water")
+head(data)
+data <- as_tibble(data)
+date.time <- data %>%
+  select(year, month, day, hour) %>%
+  mutate(date.time = make_datetime(year, month, day, hour))
+data <- cbind(data,date.time[,5])
+fac <- data %>%
+  ggplot(aes(date.time,Facility)) +
+  geom_point()
+fans <- data %>%
+  ggplot(aes(date.time,Fans)) +
+  geom_point()
+c <- data %>%
+  ggplot(aes(date.time,Cooling)) +
+  geom_point()
+h <- data %>%
+  ggplot(aes(date.time,Heating)) +
+  geom_point()
+grid.arrange(fac, fans, c, h, nrow = 2)
+##Looking at the data from one year, it is difficult to distinguish a pattern.  Without clustering packages, it would be easier to look at a sample of single day data.  
+data1 <- data[,-c(1:4)]
+data1 <- data1[,-11]
+data1 <- data1[c(1:24),]
+hour <- 1:24
+rownames(data1) <- hour
+d1 <- data1 %>%
+  ggplot(aes(hour,Facility)) +
+  geom_line() +
+  labs(title = "Clustering for Facility load profile First 24 hours",caption = "Two peaks",cex=6) +
+  xlab("") +
+  ylab("Facility") 
+d2 <- data1 %>%
+  ggplot(aes(hour,Fans)) +
+  geom_line() +
+  labs(title = "",caption = "One peak",cex=6) +
+  xlab("") +
+  ylab("Fans") 
+d3 <- data1 %>%
+  ggplot(aes(hour,Cooling)) +
+  geom_line() +
+  labs(title = "",caption = "Two peaks",cex=6) +
+  xlab("") +
+  ylab("Cooling") 
+d4 <- data1 %>%
+  ggplot(aes(hour,Heating)) +
+  geom_line() +
+  labs(title = "",caption = "downward slope then level at 0",cex=6) +
+  xlab("") +
+  ylab("Heating") 
+grid.arrange(d1, d2, d3, d4, nrow = 2)
+##And now using the hclust package starting with sample data
+dist <- dist(data1)
+cat("Plotting the sample data")
+##Ploting with each ID number representing hour of a 24 hour day
+par(new=FALSE)
+plot(pc <- hclust(dist), main = "Sample Power Clusters Dendrogram")
+fviz_nbclust(data1,kmeans,method = "wss") + 
+  geom_vline(xintercept = 3, linetype = 2)
+#Hclust with pop 
+sd <- scale(data[,c(5:14)])
+hour <- rep(1:24, times=365, each=1)
+rownames(sd) <- hour
+dist3 <- dist(sd,method = "euclidian")
+as.matrix(dist3)[1:6,1:6]
+plot(pc2 <- hclust(dist3), main = "P Power Clusters Dendrogram")
+
+##With the cophenetic function in R you can measure the correlation between the original euclidian distance and the cophenetic distance created by the hclust function to make sure that it was a successful fit.  
+pc2.coph <- cophenetic(pc2)
+cor <- cor(dist3,pc2.coph)
+print(cor)
+##75 is considered the cutoff so the cluster tree is verified
+##Using the cutree function. 
+grp <- cutree(pc2, k = 3)
+head(grp,n=24)
+###Create day variables#####################
+day1 <- apply(data[c(1:24),c(5:14)],2,mean)
+day2 <- apply(data[c((1+24*1):(24*2)),c(5:14)],2,mean)
+day3 <- apply(data[c((1+24*2):(24*3)),c(5:14)],2,mean)
+day4 <- apply(data[c((1+24*3):(24*4)),c(5:14)],2,mean)
+day5 <- apply(data[c((1+24*4):(24*5)),c(5:14)],2,mean)
+day6 <- apply(data[c((1+24*5):(24*6)),c(5:14)],2,mean)
+day7 <- apply(data[c((1+24*6):(24*7)),c(5:14)],2,mean)
+day8 <- apply(data[c((1+24*7):(24*8)),c(5:14)],2,mean)
+day9 <- apply(data[c((1+24*8):(24*9)),c(5:14)],2,mean)
+day10 <- apply(data[c((1+24*9):(24*10)),c(5:14)],2,mean)
+day11<- apply(data[c((1+24*10):(24*11)),c(5:14)],2,mean)
+day12<- apply(data[c((1+24*11):(24*12)),c(5:14)],2,mean)
+day13<- apply(data[c((1+24*12):(24*13)),c(5:14)],2,mean)
+day14<- apply(data[c((1+24*13):(24*14)),c(5:14)],2,mean)
+day15<- apply(data[c((1+24*14):(24*15)),c(5:14)],2,mean)
+day16<- apply(data[c((1+24*15):(24*16)),c(5:14)],2,mean)
+day17<- apply(data[c((1+24*16):(24*17)),c(5:14)],2,mean)
+day18<- apply(data[c((1+24*17):(24*18)),c(5:14)],2,mean)
+day19<- apply(data[c((1+24*18):(24*19)),c(5:14)],2,mean)
+day20<- apply(data[c((1+24*19):(24*20)),c(5:14)],2,mean)
+day21<- apply(data[c((1+24*20):(24*21)),c(5:14)],2,mean)
+day22<- apply(data[c((1+24*21):(24*22)),c(5:14)],2,mean)
+day23<- apply(data[c((1+24*22):(24*23)),c(5:14)],2,mean)
+day24<- apply(data[c((1+24*23):(24*24)),c(5:14)],2,mean)
+day25<- apply(data[c((1+24*24):(24*25)),c(5:14)],2,mean)
+day26<- apply(data[c((1+24*25):(24*26)),c(5:14)],2,mean)
+day27<- apply(data[c((1+24*26):(24*27)),c(5:14)],2,mean)
+day28 <-  apply(data[c((1+24*27):(24*28)),c(5:14)],2,mean)
+day29<- apply(data[c((1+24*28):(24*29)),c(5:14)],2,mean)
+day30<- apply(data[c((1+24*29):(24*30)),c(5:14)],2,mean)
+day31 <- apply(data[c((1+24*30):(24*31)),c(5:14)],2,mean)
+January <- cbind(day1, day2, day3, day4, day5, day6, day7, day8, day9, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day20, day21, day22, day23, day24, day25, day26, day27, day28, day29, day30, day31)
+January <- t(January)
+na.omit(January)
+## Using Kmeans and distance with standardized data
+j.scaled <- scale(January[,-9])
+j.dist <- get_dist(j.scaled)
+#distance
+##this takes an un godly long time to complete so a sample might be bettter.
+#fviz_dist(distance, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07"))
+is.na(j.scaled)
+k2 <- kmeans(j.scaled, centers = 2, nstart = 25)
+k2
+str(k2[3:6])
+fviz_cluster(k2, data = j.scaled)
+##Printing k2 will give the specific time and date associated with cluster grouping
+#k2 (not printing as it takes up too much space)
+##then checking other numbers of k
+k3 <- kmeans(j.scaled, centers = 3, nstart = 25)
+k4 <- kmeans(j.scaled, centers = 4, nstart = 25)
+k5 <- kmeans(j.scaled, centers = 5, nstart = 25)
+
+# plots to compare
+p1 <- fviz_cluster(k2, geom = "point", data = j.scaled) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point",  data = j.scaled) + ggtitle("k = 3")
+p3 <- fviz_cluster(k4, geom = "point",  data = j.scaled) + ggtitle("k = 4")
+p4 <- fviz_cluster(k5, geom = "point",  data = j.scaled) + ggtitle("k = 5")
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+## I think two clusters seems best.  
+j.scaled %>%
+  as_tibble() %>%
+  mutate(cluster = k4$cluster,
+         Day = row.names(January)) %>%
+  ggplot(aes(Facility, Fans, color = factor(cluster), label = Day)) +
+  geom_text()
+##Printing final results
+set.seed(123)
+final <- kmeans(j.scaled, 4, nstart = 25)
+#print(final)
+##add final as column in original data
+day <- 1:31
+j2 <- as_tibble(cbind(January,final$cluster,day))
+jan1 <- j2 %>%
+  ggplot(aes(j2$day,j2$Facility  ,color = V11)) +
+  geom_point() +
+  labs(title = "Facility",caption = "With Clusters",cex=6) +
+  labs(color = "Clusters")  
+jan2 <- j2 %>%
+  ggplot(aes(j2$day,j2$Fans  ,color = V11)) +
+  geom_point() +
+  labs(title = "Fans",caption = "With Clusters",cex=6) +
+  labs(color = "Clusters")  
+jan3 <- j2 %>%
+  ggplot(aes(j2$day,j2$Heating  ,color = V11)) +
+  geom_point() +
+  labs(title = "Heating",caption = "With Clusters",cex=6) +
+  labs(color = "Clusters")  
+jan4 <- j2 %>%
+  ggplot(aes(j2$day,j2$Cooling  ,color = V11)) +
+  geom_point() +
+  labs(title = "Cooling",caption = "With Clusters",cex=6) +
+  labs(color = "Clusters")  
+grid.arrange(jan1, jan2, jan3, jan4, nrow = 2)
+
+
