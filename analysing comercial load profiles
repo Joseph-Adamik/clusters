@@ -1,5 +1,3 @@
-##this is using data from openei which can be found here https://openei.org/datasets/files/961/pub/  It works with any of these dat sets
-
 library(tidyverse)
 library(cluster)    # clustering algorithms
 library(factoextra)
@@ -181,5 +179,5 @@ jan4 <- j2 %>%
   labs(title = "Cooling",caption = "With Clusters",cex=6) +
   labs(color = "Clusters")  
 grid.arrange(jan1, jan2, jan3, jan4, nrow = 2)
-
-
+ 
+  
